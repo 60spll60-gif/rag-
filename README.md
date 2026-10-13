@@ -195,7 +195,7 @@ RAG-Enterprise-Knowledge/
 │   └── api.py               # FastAPI + 静态文件服务
 │
 ├── rag_ui/                  # 🎨 前端界面
-│   ├── index.html           # Bootstrap 5 聊天界面（原生 JS）
+│   ├── index.html           # 双栏聊天界面（原生 JS：轻量 Markdown 渲染、引用溯源、复制答案）
 │   ├── app.py               # Streamlit 版（备用）
 │   └── assets/vendor/       # 本地化 CSS/字体（离线可用，不依赖 CDN）
 │

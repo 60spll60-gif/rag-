@@ -6,63 +6,242 @@
     <title>企业知识库智能问答</title>
     <!-- 本地化依赖：内网/离线部署也能正常显示（不从 CDN 加载） -->
     <link href="/assets/vendor/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome — 图标库 -->
     <link href="/assets/vendor/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4a90d9;
-            --bg-light: #f8f9fa;
+            --primary: #2f6fb3;
+            --primary-light: #eaf2fa;
+            --bg: #f5f7fa;
+            --bubble-user: linear-gradient(135deg, #3d7fc4, #2f6fb3);
+            --text-main: #2c3e50;
+            --text-muted: #8492a6;
         }
-        body { background-color: var(--bg-light); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
-        /* 聊天气泡样式 */
-        .chat-container { max-height: calc(100vh - 280px); overflow-y: auto; padding: 20px; }
-        .message-bubble { max-width: 80%; margin-bottom: 16px; animation: fadeIn 0.3s ease; }
-        .message-user { margin-left: auto; text-align: right; }
-        .message-assistant { margin-right: auto; }
-        
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* ===== 顶栏 ===== */
+        .navbar-custom {
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(31, 45, 61, .08);
+        }
+        .navbar-custom .navbar-brand { font-weight: 700; color: var(--primary) !important; }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-online { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,.15); }
+
+        /* ===== 聊天卡片 ===== */
+        .chat-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(31, 45, 61, .06);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 90px);
+            min-height: 480px;
+        }
+        .chat-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #eef1f5;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .chat-header .title { font-weight: 600; font-size: 1.02rem; }
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 22px 20px;
+            scroll-behavior: smooth;
+        }
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background: #d5dbe3; border-radius: 3px; }
+
+        /* ===== 消息气泡 ===== */
+        .message { display: flex; margin-bottom: 18px; animation: fadeIn .25s ease; }
+        .message-user { justify-content: flex-end; }
+        .avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; flex-shrink: 0; color: #fff;
+        }
+        .avatar-user { background: #7f8fa3; margin-left: 10px; }
+        .avatar-ai { background: var(--primary); margin-right: 10px; }
+        .bubble-wrap { max-width: 82%; }
+        .bubble {
+            padding: 11px 15px;
+            border-radius: 14px;
+            line-height: 1.65;
+            font-size: .94rem;
+            word-break: break-word;
+        }
         .bubble-user {
-            background: var(--primary-color); color: white;
-            border-radius: 18px 18px 4px 18px; padding: 12px 16px; display: inline-block;
+            background: var(--bubble-user);
+            color: #fff;
+            border-top-right-radius: 4px;
+            white-space: pre-wrap;
         }
-        .bubble-assistant {
-            background: white; color: #333;
-            border-radius: 18px 18px 18px 4px; padding: 12px 16px; display: inline-block;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        .bubble-ai {
+            background: #f4f7fb;
+            border-top-left-radius: 4px;
+            border: 1px solid #e8edf4;
         }
-        
-        /* 引用来源面板 */
+        .msg-meta {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 5px; font-size: .75rem; color: var(--text-muted);
+        }
+        .message-user .msg-meta { justify-content: flex-end; }
+        .copy-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-size: .75rem; padding: 0; cursor: pointer;
+        }
+        .copy-btn:hover { color: var(--primary); }
+
+        /* ===== 答案内容（轻量 Markdown） ===== */
+        .bubble-ai strong { color: #1f3a5f; }
+        .md-heading { font-weight: 700; margin: 8px 0 4px; font-size: .98rem; color: #1f3a5f; }
+        .md-list-item { margin: 3px 0; padding-left: 2px; }
+        .md-num { color: var(--primary); font-weight: 600; margin-right: 4px; }
+        .inline-code, .code-block code {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: .86em;
+            background: #e8eef6;
+            color: #24476e;
+            border-radius: 4px;
+        }
+        .inline-code { padding: 1px 5px; }
+        .code-block {
+            background: #1e293b;
+            color: #d8e3f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-size: .85rem;
+            line-height: 1.5;
+        }
+        .code-block code { background: none; color: inherit; }
+
+        /* ===== 引用来源 ===== */
         .source-panel {
-            background: var(--bg-light); border-left: 3px solid var(--primary-color);
-            border-radius: 4px; padding: 10px 14px; margin-top: 10px; font-size: 0.9em;
+            margin-top: 8px;
+            background: #fff;
+            border: 1px solid #e3eaf3;
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .source-panel .source-item { padding: 4px 0; border-bottom: 1px dashed #dee2e6; }
-        .source-panel .source-item:last-child { border-bottom: none; }
-        
-        /* 打字动画 */
+        .source-panel summary {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: .82rem;
+            color: var(--primary);
+            font-weight: 600;
+            list-style: none;
+            user-select: none;
+        }
+        .source-panel summary::-webkit-details-marker { display: none; }
+        .source-panel .source-item {
+            padding: 8px 12px;
+            border-top: 1px dashed #e6ebf2;
+            font-size: .82rem;
+        }
+        .source-panel .source-item .st { font-weight: 600; color: var(--text-main); }
+
+        /* ===== 欢迎页 ===== */
+        .welcome { text-align: center; padding: 40px 10px 20px; }
+        .welcome .w-icon {
+            width: 64px; height: 64px; margin: 0 auto 14px;
+            background: var(--primary-light);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary); font-size: 1.7rem;
+        }
+        .welcome .chips { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .chip {
+            background: #fff;
+            border: 1px solid #dce5f0;
+            color: var(--text-main);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: .83rem;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        /* ===== 加载动画 ===== */
+        .typing-indicator { display: inline-flex; gap: 4px; padding: 4px 2px; }
         .typing-indicator span {
-            display: inline-block; width: 8px; height: 8px;
-            background: #999; border-radius: 50%; margin: 0 2px;
-            animation: typing 1.4s infinite;
+            width: 7px; height: 7px; background: #9db2c9; border-radius: 50%;
+            animation: typing 1.3s infinite;
         }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
-        
-        /* 导航栏 */
-        .navbar-brand { font-weight: 700; color: var(--primary-color) !important; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-online { background: #28a745; }
-        .status-offline { background: #dc3545; }
+        .typing-indicator span:nth-child(2) { animation-delay: .2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: .4s; }
+        .loading-text { font-size: .8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* ===== 输入区 ===== */
+        .input-area { padding: 14px 18px 16px; border-top: 1px solid #eef1f5; }
+        .input-group-custom {
+            display: flex; gap: 10px; align-items: stretch;
+            background: #f4f7fb; border: 1px solid #e0e7ef;
+            border-radius: 12px; padding: 6px 6px 6px 16px;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .input-group-custom:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(47,111,179,.12);
+            background: #fff;
+        }
+        .input-group-custom input {
+            flex: 1; border: none; outline: none; background: transparent;
+            font-size: .95rem;
+        }
+        .send-btn {
+            background: var(--bubble-user);
+            border: none; color: #fff;
+            border-radius: 9px;
+            padding: 9px 20px;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 7px;
+            transition: opacity .15s;
+        }
+        .send-btn:hover { opacity: .92; }
+        .send-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+        /* ===== 侧栏卡片 ===== */
+        .side-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(31, 45, 61, .06);
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+        .side-card h6 { font-weight: 700; font-size: .9rem; color: var(--text-main); margin-bottom: 12px; }
+        .side-card h6 i { color: var(--primary); margin-right: 6px; }
+        .stat-row {
+            display: flex; justify-content: space-between;
+            font-size: .85rem; padding: 4px 0;
+        }
+        .stat-row .val { font-weight: 700; color: var(--primary); }
+        .tip-text { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+
+        .form-range::-webkit-slider-thumb { background: var(--primary); }
+        .form-range::-moz-range-thumb { background: var(--primary); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+
+        @media (max-width: 991.98px) {
+            .chat-card { height: 70vh; margin-bottom: 16px; }
+        }
     </style>
 </head>
 <body>
 
-<!-- 顶部导航栏 -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
+<!-- 顶栏 -->
+<nav class="navbar navbar-expand navbar-custom sticky-top">
+    <div class="container-fluid px-4">
         <a class="navbar-brand" href="#"><i class="fas fa-book-reader me-2"></i>企业知识库问答系统</a>
         <div class="d-flex align-items-center">
             <span class="status-dot status-online" id="statusDot"></span>
@@ -71,79 +250,76 @@
     </div>
 </nav>
 
-<!-- 主体聊天区 -->
-<div class="container mt-3">
-    <div class="chat-container bg-white rounded-3 shadow-sm" id="chatContainer">
-        <!-- 欢迎消息 -->
-        <div class="text-center text-muted mb-4">
-            <i class="fas fa-robot fa-3x mb-3" style="color: var(--primary-color);"></i>
-            <h5>您好，我是您的知识库助手</h5>
-            <p class="mb-0">请输入您的问题，我将基于企业文档为您生成答案</p>
-        </div>
-    </div>
-    
-    <!-- 输入区域 -->
-    <div class="card mt-3">
-        <div class="card-body p-3">
-            <div class="input-group">
-                <input type="text" class="form-control form-control-lg" id="questionInput" 
-                       placeholder="输入你的问题，例如：电脑无法上网怎么排查？" 
-                       autocomplete="off">
-                <button class="btn btn-primary px-4" id="sendBtn" onclick="sendMessage()">
-                    <i class="fas fa-paper-plane me-1"></i>发送
-                </button>
-            </div>
-            <div class="text-end mt-2">
-                <small class="text-muted">按 Enter 发送 • Shift+Enter 换行</small>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 侧边功能栏 -->
-    <div class="row mt-3">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6><i class="fas fa-sliders-h me-2"></i>检索设置</h6>
-                    <label class="form-label small">参考文档数: <span id="topKValue">3</span></label>
-                    <input type="range" class="form-range" id="topKRange" min="1" max="10" value="3" 
-                           oninput="document.getElementById('topKValue').textContent=this.value">
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6><i class="fas fa-chart-bar me-2"></i>系统状态</h6>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small text-muted">总问答次数:</span>
-                        <span class="small fw-bold" id="totalQCount">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small text-muted">平均耗时:</span>
-                        <span class="small fw-bold" id="avgTime">--</span>
-                    </div>
-                    <button class="btn btn-outline-danger btn-sm w-100 mt-2" onclick="clearChat()">
-                        <i class="fas fa-trash-alt me-1"></i>清空对话
+<div class="container-fluid px-4 py-3">
+    <div class="row g-3">
+
+        <!-- 聊天主区 -->
+        <div class="col-lg-8">
+            <div class="chat-card">
+                <div class="chat-header">
+                    <span class="title"><i class="fas fa-comments me-2" style="color:var(--primary)"></i>智能问答</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                        <i class="fas fa-broom me-1"></i>清空对话
                     </button>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6><i class="fas fa-lightbulb me-2"></i>试试这些问题</h6>
-                    <div class="list-group list-group-flush">
-                        <button class="list-group-item list-group-item-action small py-1" 
-                                onclick="tryQuestion('电脑连不上WiFi怎么办？')">电脑连不上WiFi怎么办？</button>
-                        <button class="list-group-item list-group-item-action small py-1" 
-                                onclick="tryQuestion('如何连接公司VPN？')">如何连接公司VPN？</button>
-                        <button class="list-group-item list-group-item-action small py-1" 
-                                onclick="tryQuestion('打印机无法打印怎么排查？')">打印机无法打印怎么排查？</button>
+
+                <div class="chat-container" id="chatContainer">
+                    <!-- 欢迎区（动态生成） -->
+                </div>
+
+                <div class="input-area">
+                    <div class="input-group-custom">
+                        <input type="text" id="questionInput"
+                               placeholder="输入你的问题，例如：电脑无法上网怎么排查？"
+                               autocomplete="off">
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>发送
+                        </button>
+                    </div>
+                    <div class="text-end mt-2">
+                        <small class="text-muted">Enter 发送 · Shift+Enter 换行 · 答案基于本地知识库文档生成，可溯源</small>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- 侧栏 -->
+        <div class="col-lg-4">
+            <div class="side-card">
+                <h6><i class="fas fa-sliders-h"></i>检索设置</h6>
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">参考文档数</span>
+                    <span class="fw-bold text-primary" id="topKValue">3</span>
+                </div>
+                <input type="range" class="form-range" id="topKRange" min="1" max="10" value="3"
+                       oninput="document.getElementById('topKValue').textContent=this.value">
+                <div class="tip-text mt-1">返回给大模型的文档块数量。太少可能答不全，太多会引入噪声、拖慢回答。</div>
+            </div>
+
+            <div class="side-card">
+                <h6><i class="fas fa-chart-bar"></i>系统状态</h6>
+                <div class="stat-row"><span class="text-muted">总问答次数</span><span class="val" id="totalQCount">0</span></div>
+                <div class="stat-row"><span class="text-muted">平均耗时</span><span class="val" id="avgTime">--</span></div>
+                <div class="stat-row"><span class="text-muted">最近耗时</span><span class="val" id="lastTime">--</span></div>
+            </div>
+
+            <div class="side-card">
+                <h6><i class="fas fa-lightbulb"></i>试试这些问题</h6>
+                <button class="chip w-100 text-start mb-2" onclick="tryQuestion('电脑连不上WiFi怎么办？')">电脑连不上WiFi怎么办？</button>
+                <button class="chip w-100 text-start mb-2" onclick="tryQuestion('如何连接公司VPN？')">如何连接公司VPN？</button>
+                <button class="chip w-100 text-start mb-2" onclick="tryQuestion('打印机无法打印怎么排查？')">打印机无法打印怎么排查？</button>
+                <button class="chip w-100 text-start" onclick="tryQuestion('账号被锁定了怎么办？')">账号被锁定了怎么办？</button>
+            </div>
+
+            <div class="side-card">
+                <h6><i class="fas fa-shield-alt"></i>关于</h6>
+                <div class="tip-text">
+                    检索链路：BM25 关键词 + 向量语义 → RRF 融合 → CrossEncoder 重排 → 大模型生成。
+                    每个回答都附带引用来源，点击「引用来源」可查看命中的文档。
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -151,51 +327,111 @@
 // ========== 全局状态 ==========
 let questionCount = 0;
 let totalTime = 0;
-let apiBase = '/v1'; // API 基础路径
+let apiBase = '/v1';
+
+// ========== 工具函数 ==========
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 属性上下文还需转义引号，防止内容里的 " 撑破 HTML 属性
+function escapeAttr(text) {
+    return escapeHtml(text).replace(/"/g, '&quot;');
+}
+
+// 轻量 Markdown 渲染：先整体转义再转换，保证 XSS 安全
+function renderMarkdown(text) {
+    let html = escapeHtml(text);
+
+    // 代码块 ```...```
+    html = html.replace(/```([\s\S]*?)```/g, (m, code) =>
+        '<pre class="code-block"><code>' + code.trim() + '</code></pre>');
+
+    // 行内代码 `...`
+    html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
+    // 加粗 **...**
+    html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+
+    // 标题
+    html = html.replace(/^#{1,4}\s+(.+)$/gm, '<div class="md-heading">$1</div>');
+
+    // 有序列表 1. / 1、
+    html = html.replace(/^(\d+)[.、]\s+(.+)$/gm, '<div class="md-list-item"><span class="md-num">$1.</span>$2</div>');
+
+    // 无序列表 - / *
+    html = html.replace(/^[-*]\s+(.+)$/gm, '<div class="md-list-item">· $1</div>');
+
+    // 分隔线
+    html = html.replace(/^(-{3,}|\*{3,})$/gm, '<hr class="my-2">');
+
+    // 剩余换行
+    html = html.replace(/\n/g, '<br>');
+    return html;
+}
+
+function nowTime() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// ========== 欢迎区 ==========
+function renderWelcome() {
+    const container = document.getElementById('chatContainer');
+    container.innerHTML = `
+        <div class="welcome">
+            <div class="w-icon"><i class="fas fa-robot"></i></div>
+            <h5 class="fw-bold">您好，我是您的知识库助手</h5>
+            <p class="text-muted mb-0">输入问题，我将基于企业文档为您生成带引用来源的答案</p>
+            <div class="chips">
+                <span class="chip" onclick="tryQuestion('电脑连不上WiFi怎么办？')">电脑连不上WiFi怎么办？</span>
+                <span class="chip" onclick="tryQuestion('如何连接公司VPN？')">如何连接公司VPN？</span>
+                <span class="chip" onclick="tryQuestion('打印机无法打印怎么排查？')">打印机无法打印怎么排查？</span>
+            </div>
+        </div>`;
+}
+renderWelcome();
 
 // ========== 发送消息 ==========
 async function sendMessage() {
     const input = document.getElementById('questionInput');
     const question = input.value.trim();
     if (!question) return;
-    
-    // 隐藏输入
+
     input.disabled = true;
     document.getElementById('sendBtn').disabled = true;
-    
-    // 显示用户消息
-    appendMessage(question, 'user');
+
+    appendUserMessage(question);
     input.value = '';
-    
-    // 显示加载动画
+
     const loadingId = showLoading();
-    
     const topK = parseInt(document.getElementById('topKRange').value);
     const startTime = Date.now();
-    
+
     try {
         const response = await fetch(`${apiBase}/ask`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ question: question, top_k: topK })
         });
-        
-        if (!response.ok) throw new Error('API 请求失败');
-        
+
+        if (!response.ok) throw new Error('API 请求失败 (HTTP ' + response.status + ')');
+
         const data = await response.json();
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        
+
         hideLoading(loadingId);
         appendAnswer(data.answer, data.sources, elapsed);
-        
-        // 更新统计
+
         questionCount++;
         totalTime += parseFloat(elapsed);
-        updateStats();
-        
+        updateStats(elapsed);
+
     } catch (err) {
         hideLoading(loadingId);
-        appendMessage('❌ 请求失败，请检查后端服务是否启动\n' + err.message, 'error');
+        appendErrorMessage(err.message);
     } finally {
         input.disabled = false;
         document.getElementById('sendBtn').disabled = false;
@@ -203,60 +439,89 @@ async function sendMessage() {
     }
 }
 
-// ========== 工具函数 ==========
-// 转义 HTML 特殊字符，防止答案/文档内容里的标签被当作 HTML 执行（XSS）
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ========== 追加消息气泡 ==========
-function appendMessage(text, type) {
+// ========== 追加消息 ==========
+function appendUserMessage(text) {
     const container = document.getElementById('chatContainer');
-    
-    // 清除欢迎消息
-    const welcome = container.querySelector('.text-center');
-    if (welcome) welcome.remove();
-    
+    if (container.querySelector('.welcome')) container.innerHTML = '';
+
     const div = document.createElement('div');
-    div.className = `message-bubble message-${type}`;
-    
-    const bubbleClass = type === 'user' ? 'bubble-user' : 
-                        type === 'error' ? 'bubble-assistant bg-danger text-white' : 
-                        'bubble-assistant';
-    
-    div.innerHTML = `<div class="${bubbleClass}">${escapeHtml(text).replace(/\n/g, '<br>')}</div>`;
+    div.className = 'message message-user';
+    div.innerHTML = `
+        <div class="bubble-wrap">
+            <div class="bubble bubble-user">${escapeHtml(text)}</div>
+            <div class="msg-meta"><span>${nowTime()}</span></div>
+        </div>
+        <div class="avatar avatar-user"><i class="fas fa-user"></i></div>`;
     container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    scrollToBottom();
 }
 
-// ========== 追加 AI 答案 + 引用源 ==========
 function appendAnswer(answer, sources, elapsed) {
     const container = document.getElementById('chatContainer');
     const div = document.createElement('div');
-    div.className = 'message-bubble message-assistant';
-    
+    div.className = 'message';
+
     let sourcesHtml = '';
     if (sources && sources.length > 0) {
-        sourcesHtml = '<div class="source-panel"><strong><i class="fas fa-link me-1"></i>引用来源：</strong>';
+        let items = '';
         sources.forEach((src, i) => {
+            const title = escapeHtml(src.title || '');
             const file = escapeHtml(src.file || 'unknown');
-            sourcesHtml += `<div class="source-item"><i class="fas fa-file-alt me-1"></i>文档${i+1}: ${file}</div>`;
+            items += `<div class="source-item">
+                        <i class="fas fa-file-alt me-1" style="color:var(--primary)"></i>
+                        <span class="st">${title || ('文档' + (i + 1))}</span>
+                        <div class="text-muted" style="font-size:.78rem">${file}</div>
+                      </div>`;
         });
-        sourcesHtml += '</div>';
+        sourcesHtml = `
+            <details class="source-panel">
+                <summary><i class="fas fa-link me-1"></i>引用来源（${sources.length}）</summary>
+                ${items}
+            </details>`;
     }
-    
+
     div.innerHTML = `
-        <div class="bubble-assistant">
-            <div>${escapeHtml(answer).replace(/\n/g, '<br>')}</div>
-            <div class="mt-2 small text-muted"><i class="fas fa-clock me-1"></i>${elapsed}s</div>
-        </div>
-        ${sourcesHtml}
-    `;
-    
+        <div class="avatar avatar-ai"><i class="fas fa-robot"></i></div>
+        <div class="bubble-wrap">
+            <div class="bubble bubble-ai">${renderMarkdown(answer)}</div>
+            <div class="msg-meta">
+                <span>${nowTime()}</span>
+                <span>·</span>
+                <span>${elapsed}s</span>
+                <button class="copy-btn" onclick="copyAnswer(this)" data-answer="${escapeAttr(answer)}">
+                    <i class="far fa-copy me-1"></i>复制
+                </button>
+            </div>
+            ${sourcesHtml}
+        </div>`;
     container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    scrollToBottom();
+}
+
+function appendErrorMessage(message) {
+    const container = document.getElementById('chatContainer');
+    const div = document.createElement('div');
+    div.className = 'message';
+    div.innerHTML = `
+        <div class="avatar avatar-ai"><i class="fas fa-robot"></i></div>
+        <div class="bubble-wrap">
+            <div class="bubble bubble-ai" style="border-color:#f3c1c1;background:#fdf3f3;color:#a94442">
+                <i class="fas fa-exclamation-triangle me-1"></i>${escapeHtml(message)}
+            </div>
+        </div>`;
+    container.appendChild(div);
+    scrollToBottom();
+}
+
+function copyAnswer(btn) {
+    const text = btn.getAttribute('data-answer');
+    navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>已复制';
+        setTimeout(() => { btn.innerHTML = '<i class="far fa-copy me-1"></i>复制'; }, 1500);
+    }).catch(() => {
+        btn.innerHTML = '复制失败';
+        setTimeout(() => { btn.innerHTML = '<i class="far fa-copy me-1"></i>复制'; }, 1500);
+    });
 }
 
 // ========== 加载动画 ==========
@@ -265,10 +530,17 @@ function showLoading() {
     const container = document.getElementById('chatContainer');
     const div = document.createElement('div');
     div.id = id;
-    div.className = 'message-bubble message-assistant';
-    div.innerHTML = '<div class="bubble-assistant"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    div.className = 'message';
+    div.innerHTML = `
+        <div class="avatar avatar-ai"><i class="fas fa-robot"></i></div>
+        <div class="bubble-wrap">
+            <div class="bubble bubble-ai">
+                <div class="typing-indicator"><span></span><span></span><span></span></div>
+                <div class="loading-text"><i class="fas fa-search me-1"></i>正在检索知识库并生成答案，通常需要 10~30 秒…</div>
+            </div>
+        </div>`;
     container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    scrollToBottom();
     return id;
 }
 
@@ -277,35 +549,36 @@ function hideLoading(id) {
     if (el) el.remove();
 }
 
+// ========== 统计与清空 ==========
+function updateStats(lastElapsed) {
+    document.getElementById('totalQCount').textContent = questionCount;
+    document.getElementById('avgTime').textContent =
+        questionCount > 0 ? (totalTime / questionCount).toFixed(1) + 's' : '--';
+    document.getElementById('lastTime').textContent =
+        lastElapsed ? lastElapsed + 's' : '--';
+}
+
+function clearChat() {
+    questionCount = 0;
+    totalTime = 0;
+    renderWelcome();
+    document.getElementById('totalQCount').textContent = 0;
+    document.getElementById('avgTime').textContent = '--';
+    document.getElementById('lastTime').textContent = '--';
+}
+
+function scrollToBottom() {
+    const container = document.getElementById('chatContainer');
+    container.scrollTop = container.scrollHeight;
+}
+
 // ========== 快捷问题 ==========
 function tryQuestion(q) {
     document.getElementById('questionInput').value = q;
     sendMessage();
 }
 
-// ========== 更新统计数据 ==========
-function updateStats() {
-    document.getElementById('totalQCount').textContent = questionCount;
-    document.getElementById('avgTime').textContent = questionCount > 0 ? 
-        (totalTime / questionCount).toFixed(1) + 's' : '--';
-}
-
-// ========== 清空对话 ==========
-function clearChat() {
-    const container = document.getElementById('chatContainer');
-    container.innerHTML = `
-        <div class="text-center text-muted mb-4">
-            <i class="fas fa-robot fa-3x mb-3" style="color: var(--primary-color);"></i>
-            <h5>您好，我是您的知识库助手</h5>
-            <p class="mb-0">请输入您的问题，我将基于企业文档为您生成答案</p>
-        </div>
-    `;
-    questionCount = 0;
-    totalTime = 0;
-    updateStats();
-}
-
-// ========== 键盘快捷键 ==========
+// ========== 快捷键 ==========
 document.getElementById('questionInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
