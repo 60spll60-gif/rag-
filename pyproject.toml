@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-knowledge-base"
+version = "1.0.0"
+description = "基于 RAG 的企业知识库智能问答系统"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["rag_core", "rag_ingest"]
+python_files = ["test_*.py"]
+
+[tool.coverage.run]
+source = ["rag_core", "rag_ingest"]
+# 排除需要下载模型/连外网的模块（属集成测试范畴，不纳入单元测试覆盖率）
+omit = [
+    "rag_core/retrieval.py",
+    "rag_core/embed_and_store.py",
+]
+
+[tool.coverage.report]
+fail_under = 60  # 纯逻辑模块的最低覆盖率要求

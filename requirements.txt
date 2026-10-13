@@ -1,0 +1,31 @@
+# RAG 企业知识库问答系统 — 核心依赖
+# ===========================================
+
+# ---- LangChain 生态 ----
+langchain>=0.2.0
+langchain-community>=0.2.0
+
+# ---- 向量数据库 ----
+chromadb>=0.4.0
+
+# ---- 嵌入模型 & 重排序 ----
+sentence-transformers>=2.2.0
+
+# ---- 文档解析 ----
+pypdf>=4.0.0
+# Docx2txtLoader 依赖 docx2txt（不是 python-docx）
+docx2txt>=0.8
+
+# ---- API 框架 ----
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# ---- 前端 ----
+streamlit>=1.28.0
+
+# ---- LLM 客户端（OpenAI 兼容接口）----
+openai>=1.0.0
+
+# ---- 其他工具 ----
+python-dotenv>=1.0.0

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+*.md
+test_docs/
+chroma_db/
+logs/
+.env
+.venv/
+.venv

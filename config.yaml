@@ -1,0 +1,75 @@
+# ============================================================
+# RAG 企业知识库问答系统 — 全局配置
+# ============================================================
+# 把所有可调参数集中管理，面试时可以说：
+# "我把所有超参和配置项抽象到 YAML，避免硬编码，方便实验对比"
+
+# ---- 文档处理 ----
+ingest:
+  # 文档根目录（存放 PDF/Word 等原始文件）
+  source_dir: "./test_docs"
+  
+  # 每个文本块的字符数上限
+  # chunk_size 太大 → 一块混多个主题 → 检索不准
+  # chunk_size 太小 → 语义不完整 → 答不全
+  chunk_size: 500
+  
+  # 相邻块重叠字符数（防止一句话被切断在两半）
+  chunk_overlap: 80
+  
+  # 中文优先分隔符（按优先级从高到低）
+  separators:
+    - "\n\n"      # 段落边界
+    - "\n"        # 行边界
+    - "。"        # 句号
+    - "；"        # 分号
+    - "，"        # 逗号
+    - " "         # 空格（英文用）
+    - ""          # 单字符兜底
+
+# ---- 向量化 & 存储 ----
+embeddings:
+  # 模型名（HuggingFace 上的开源模型）
+  model_name: "BAAI/bge-m3"
+  device: "cpu"   # 有 GPU 改为 "cuda"，速度提升 10 倍
+  normalize_embeddings: true  # 归一化 → 用余弦相似度
+
+vectorstore:
+  # 向量数据库类型（chroma / milvus）
+  type: "chroma"
+  persist_directory: "./chroma_db"
+
+# ---- 检索 ----
+retrieval:
+  # 粗排召回数量（先从大量候选中快速捞出）
+  top_k_cascade: 10
+  
+  # 重排后最终返回数量（给 LLM 的上下文有限，不能太多）
+  top_k_final: 3
+  
+  # 是否启用重排序（CrossEncoder 精排）
+  enable_reranker: true
+
+  # 是否在主链路启用混合检索（BM25 + 向量 + RRF 融合）
+  # 关闭后只走纯向量检索，可用于对比实验
+  enable_hybrid: true
+  
+  reranker_model: "BAAI/bge-reranker-v2-m3"
+
+# ---- LLM ----
+llm:
+  # API 配置（密钥从环境变量读取，不写死代码里）
+  api_key_env: "OPENAI_API_KEY"
+  base_url_env: "OPENAI_BASE_URL"
+  model: "deepseek-chat"
+  temperature: 0.1  # 低温度求稳，减少幻觉
+
+# ---- API ----
+api:
+  host: "0.0.0.0"
+  port: 8000
+  
+# ---- 前端 ----
+ui:
+  host: "0.0.0.0"
+  port: 8501
