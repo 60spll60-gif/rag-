@@ -84,7 +84,7 @@ export OPENAI_BASE_URL="https://api.deepseek.com"
 # ① 文档加载与切分（从 config.yaml 读取参数）
 python -m rag_ingest.ingest --doc-dir ./test_docs
 
-# ② 向量化入库（自动检测是否需要执行）
+# ② 向量化入库（每次运行清空旧集合后重建，文档更新后重跑此命令即可）
 python -m rag_core.embed_and_store
 
 # ③ 启动 API 服务 + Web 前端

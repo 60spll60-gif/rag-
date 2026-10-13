@@ -81,3 +81,26 @@ class TestLoadDocuments:
         with tempfile.TemporaryDirectory() as tmpdir:
             docs = load_documents(tmpdir)
             assert docs == []
+
+
+class TestFrontmatter:
+    """YAML frontmatter 解析测试"""
+
+    def test_date_value_converted_to_string(self):
+        """YAML 会把日期解析成 date 对象，向量库只接受字符串 → 必须转成 str"""
+        import tempfile
+        from pathlib import Path
+        from rag_ingest.ingest import _parse_frontmatter
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            f = Path(tmpdir) / "doc.md"
+            f.write_text(
+                "---\ntitle: 测试文档\nupdated: 2026-01-15\ntags: [WiFi, DNS]\n---\n正文内容",
+                encoding="utf-8",
+            )
+            content, meta = _parse_frontmatter(f)
+
+            assert meta["updated"] == "2026-01-15"
+            assert isinstance(meta["updated"], str)
+            assert meta["tags"] == ["WiFi", "DNS"]
+            assert content == "正文内容"

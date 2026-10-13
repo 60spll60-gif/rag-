@@ -55,27 +55,23 @@ def create_vectorstore(chunks: list, persist_directory: str = None) -> Chroma:
         persist_directory=persist_directory,
     )
 
-    vectorstore.persist()
     info(f"✅ 已向量化 {len(chunks)} 个文本块，保存在 {persist_directory}")
     return vectorstore
 
 
 if __name__ == "__main__":
-    from pathlib import Path
     from rag_ingest.ingest import load_documents, split_documents
-    
-    # 如果还没有向量库，自动执行完整入库流程
-    if not Path("./chroma_db").exists():
-        print("⚠️  还没有向量库，开始完整入库流程...")
-        
-        # Step 1: 加载文档
-        documents = load_documents()
-        print(f"📄 共加载 {len(documents)} 个文档")
-        
-        # Step 2: 智能切分
-        chunks = split_documents(documents)
-        
-        # Step 3: 向量化入库
-        create_vectorstore(chunks)
-    else:
-        print("✅ 向量库已存在，可直接使用")
+
+    # 每次运行都清空重建（create_vectorstore 内部会先删旧集合），
+    # 保证向量库与 test_docs/ 里的最新文档一致
+    print("🔄 开始重建向量库（先清空旧集合）...")
+
+    # Step 1: 加载文档
+    documents = load_documents()
+    print(f"📄 共加载 {len(documents)} 个文档")
+
+    # Step 2: 智能切分
+    chunks = split_documents(documents)
+
+    # Step 3: 向量化入库
+    create_vectorstore(chunks)

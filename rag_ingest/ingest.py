@@ -13,6 +13,30 @@ from rag_core.logger import setup_logger, info, warning
 logger = setup_logger()
 
 
+def _sanitize_metadata(meta: dict) -> dict:
+    """把 frontmatter 元数据转成向量库支持的类型
+
+    YAML 会把 "2026-01-15" 解析成 date 对象、嵌套结构解析成 dict，
+    而 ChromaDB 的元数据只接受 str/int/float/bool/list/None。
+    """
+    from datetime import date, datetime
+
+    clean = {}
+    for key, value in meta.items():
+        if isinstance(value, (date, datetime)):
+            clean[key] = value.isoformat()
+        elif isinstance(value, (str, int, float, bool)) or value is None:
+            clean[key] = value
+        elif isinstance(value, list):
+            clean[key] = [
+                v if isinstance(v, (str, int, float, bool)) or v is None else str(v)
+                for v in value
+            ]
+        else:
+            clean[key] = str(value)
+    return clean
+
+
 def _parse_frontmatter(filepath: Path) -> tuple:
     """解析 Markdown 的 YAML frontmatter，返回 (正文内容, 元数据字典)
     
@@ -42,7 +66,7 @@ def _parse_frontmatter(filepath: Path) -> tuple:
             try:
                 fm = yaml.safe_load(parts[1]) or {}
                 if isinstance(fm, dict):
-                    meta.update(fm)
+                    meta.update(_sanitize_metadata(fm))
                 content = parts[2].strip()
                 return content, meta
             except yaml.YAMLError as e:
