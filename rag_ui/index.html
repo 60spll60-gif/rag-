@@ -9,34 +9,42 @@
     <link href="/assets/vendor/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #2f6fb3;
-            --primary-light: #eaf2fa;
-            --bg: #f5f7fa;
-            --bubble-user: linear-gradient(135deg, #3d7fc4, #2f6fb3);
-            --text-main: #2c3e50;
-            --text-muted: #8492a6;
+            --green: #2ecc71;
+            --green-dark: #27ae60;
+            --green-glow: rgba(46, 204, 113, .16);
+            --green-text: #8ce99a;
+            --bg: #0d1117;
+            --panel: #161b22;
+            --panel-2: #1c232d;
+            --border: #2a323d;
+            --text: #d9e2ec;
+            --muted: #8b96a3;
+            --bubble-ai: #1a222c;
+            --bubble-ai-border: #26303c;
+            --user-text: #06210f;
         }
         body {
             background: var(--bg);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            color: var(--text-main);
+            color: var(--text);
             min-height: 100vh;
         }
 
         /* ===== 顶栏 ===== */
         .navbar-custom {
-            background: #fff;
-            box-shadow: 0 1px 4px rgba(31, 45, 61, .08);
+            background: #131920;
+            border-bottom: 1px solid var(--border);
         }
-        .navbar-custom .navbar-brand { font-weight: 700; color: var(--primary) !important; }
+        .navbar-custom .navbar-brand { font-weight: 700; color: var(--green) !important; }
         .status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-online { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,.15); }
+        .status-online { background: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+        .navbar-custom .text-muted { color: var(--muted) !important; }
 
         /* ===== 聊天卡片 ===== */
         .chat-card {
-            background: #fff;
+            background: var(--panel);
+            border: 1px solid var(--border);
             border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(31, 45, 61, .06);
             display: flex;
             flex-direction: column;
             height: calc(100vh - 90px);
@@ -44,10 +52,17 @@
         }
         .chat-header {
             padding: 14px 20px;
-            border-bottom: 1px solid #eef1f5;
+            border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
         }
-        .chat-header .title { font-weight: 600; font-size: 1.02rem; }
+        .chat-header .title { font-weight: 600; font-size: 1.02rem; color: var(--text); }
+        .chat-header .title i { color: var(--green); }
+        .btn-outline-secondary {
+            border-color: #30363d; color: #b3bdc9;
+        }
+        .btn-outline-secondary:hover {
+            background: var(--panel-2); border-color: var(--green); color: var(--green);
+        }
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -55,7 +70,7 @@
             scroll-behavior: smooth;
         }
         .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-thumb { background: #d5dbe3; border-radius: 3px; }
+        .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
         /* ===== 消息气泡 ===== */
         .message { display: flex; margin-bottom: 18px; animation: fadeIn .25s ease; }
@@ -65,8 +80,8 @@
             display: flex; align-items: center; justify-content: center;
             font-size: .8rem; flex-shrink: 0; color: #fff;
         }
-        .avatar-user { background: #7f8fa3; margin-left: 10px; }
-        .avatar-ai { background: var(--primary); margin-right: 10px; }
+        .avatar-user { background: #3b4654; margin-left: 10px; }
+        .avatar-ai { background: var(--green-dark); margin-right: 10px; }
         .bubble-wrap { max-width: 82%; }
         .bubble {
             padding: 11px 15px;
@@ -76,43 +91,48 @@
             word-break: break-word;
         }
         .bubble-user {
-            background: var(--bubble-user);
-            color: #fff;
+            background: linear-gradient(135deg, #3ddc84, var(--green));
+            color: var(--user-text);
+            font-weight: 500;
             border-top-right-radius: 4px;
             white-space: pre-wrap;
         }
         .bubble-ai {
-            background: #f4f7fb;
+            background: var(--bubble-ai);
+            color: var(--text);
+            border: 1px solid var(--bubble-ai-border);
             border-top-left-radius: 4px;
-            border: 1px solid #e8edf4;
         }
         .msg-meta {
             display: flex; align-items: center; gap: 8px;
-            margin-top: 5px; font-size: .75rem; color: var(--text-muted);
+            margin-top: 5px; font-size: .75rem; color: var(--muted);
         }
         .message-user .msg-meta { justify-content: flex-end; }
         .copy-btn {
-            background: none; border: none; color: var(--text-muted);
+            background: none; border: none; color: var(--muted);
             font-size: .75rem; padding: 0; cursor: pointer;
         }
-        .copy-btn:hover { color: var(--primary); }
+        .copy-btn:hover { color: var(--green); }
 
         /* ===== 答案内容（轻量 Markdown） ===== */
-        .bubble-ai strong { color: #1f3a5f; }
-        .md-heading { font-weight: 700; margin: 8px 0 4px; font-size: .98rem; color: #1f3a5f; }
+        .bubble-ai strong { color: var(--green-text); }
+        .md-heading { font-weight: 700; margin: 8px 0 4px; font-size: .98rem; color: #b9f5d0; }
         .md-list-item { margin: 3px 0; padding-left: 2px; }
-        .md-num { color: var(--primary); font-weight: 600; margin-right: 4px; }
+        .md-num { color: var(--green); font-weight: 600; margin-right: 4px; }
         .inline-code, .code-block code {
             font-family: Consolas, "Courier New", monospace;
             font-size: .86em;
-            background: #e8eef6;
-            color: #24476e;
+        }
+        .inline-code {
+            padding: 1px 5px;
+            background: #22303f;
+            color: #7ee2a8;
             border-radius: 4px;
         }
-        .inline-code { padding: 1px 5px; }
         .code-block {
-            background: #1e293b;
-            color: #d8e3f0;
+            background: #07100b;
+            border: 1px solid #173526;
+            color: #8ce99a;
             border-radius: 8px;
             padding: 12px 14px;
             margin: 8px 0;
@@ -125,9 +145,9 @@
         /* ===== 引用来源 ===== */
         .source-panel {
             margin-top: 8px;
-            background: #fff;
-            border: 1px solid #e3eaf3;
-            border-left: 3px solid var(--primary);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--green);
             border-radius: 8px;
             overflow: hidden;
         }
@@ -135,7 +155,7 @@
             padding: 8px 12px;
             cursor: pointer;
             font-size: .82rem;
-            color: var(--primary);
+            color: var(--green);
             font-weight: 600;
             list-style: none;
             user-select: none;
@@ -143,66 +163,71 @@
         .source-panel summary::-webkit-details-marker { display: none; }
         .source-panel .source-item {
             padding: 8px 12px;
-            border-top: 1px dashed #e6ebf2;
+            border-top: 1px dashed var(--border);
             font-size: .82rem;
         }
-        .source-panel .source-item .st { font-weight: 600; color: var(--text-main); }
+        .source-panel .source-item .st { font-weight: 600; color: var(--text); }
 
         /* ===== 欢迎页 ===== */
         .welcome { text-align: center; padding: 40px 10px 20px; }
         .welcome .w-icon {
             width: 64px; height: 64px; margin: 0 auto 14px;
-            background: var(--primary-light);
+            background: var(--green-glow);
             border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
-            color: var(--primary); font-size: 1.7rem;
+            color: var(--green); font-size: 1.7rem;
         }
         .welcome .chips { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .chip {
-            background: #fff;
-            border: 1px solid #dce5f0;
-            color: var(--text-main);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
             border-radius: 20px;
             padding: 6px 14px;
             font-size: .83rem;
             cursor: pointer;
             transition: all .15s;
         }
-        .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .chip:hover {
+            border-color: var(--green);
+            color: var(--green);
+            background: var(--green-glow);
+        }
 
         /* ===== 加载动画 ===== */
         .typing-indicator { display: inline-flex; gap: 4px; padding: 4px 2px; }
         .typing-indicator span {
-            width: 7px; height: 7px; background: #9db2c9; border-radius: 50%;
+            width: 7px; height: 7px; background: var(--green); border-radius: 50%;
             animation: typing 1.3s infinite;
         }
         .typing-indicator span:nth-child(2) { animation-delay: .2s; }
         .typing-indicator span:nth-child(3) { animation-delay: .4s; }
-        .loading-text { font-size: .8rem; color: var(--text-muted); margin-top: 4px; }
+        .loading-text { font-size: .8rem; color: var(--muted); margin-top: 4px; }
 
         /* ===== 输入区 ===== */
-        .input-area { padding: 14px 18px 16px; border-top: 1px solid #eef1f5; }
+        .input-area { padding: 14px 18px 16px; border-top: 1px solid var(--border); }
         .input-group-custom {
             display: flex; gap: 10px; align-items: stretch;
-            background: #f4f7fb; border: 1px solid #e0e7ef;
+            background: #121820; border: 1px solid var(--border);
             border-radius: 12px; padding: 6px 6px 6px 16px;
             transition: border-color .15s, box-shadow .15s;
         }
         .input-group-custom:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(47,111,179,.12);
-            background: #fff;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+            background: #151d27;
         }
         .input-group-custom input {
             flex: 1; border: none; outline: none; background: transparent;
-            font-size: .95rem;
+            font-size: .95rem; color: var(--text);
         }
+        .input-group-custom input::placeholder { color: #6b7683; }
         .send-btn {
-            background: var(--bubble-user);
-            border: none; color: #fff;
+            background: linear-gradient(135deg, #3ddc84, var(--green));
+            border: none; color: var(--user-text);
             border-radius: 9px;
             padding: 9px 20px;
-            font-weight: 600;
+            font-weight: 700;
             display: flex; align-items: center; gap: 7px;
             transition: opacity .15s;
         }
@@ -211,23 +236,23 @@
 
         /* ===== 侧栏卡片 ===== */
         .side-card {
-            background: #fff;
+            background: var(--panel);
+            border: 1px solid var(--border);
             border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(31, 45, 61, .06);
             padding: 16px 18px;
             margin-bottom: 14px;
         }
-        .side-card h6 { font-weight: 700; font-size: .9rem; color: var(--text-main); margin-bottom: 12px; }
-        .side-card h6 i { color: var(--primary); margin-right: 6px; }
+        .side-card h6 { font-weight: 700; font-size: .9rem; color: var(--text); margin-bottom: 12px; }
+        .side-card h6 i { color: var(--green); margin-right: 6px; }
         .stat-row {
             display: flex; justify-content: space-between;
             font-size: .85rem; padding: 4px 0;
         }
-        .stat-row .val { font-weight: 700; color: var(--primary); }
-        .tip-text { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+        .stat-row .val { font-weight: 700; color: var(--green); }
+        .tip-text { font-size: .8rem; color: var(--muted); line-height: 1.6; }
+        .side-card .text-muted, .small { color: var(--muted) !important; }
 
-        .form-range::-webkit-slider-thumb { background: var(--primary); }
-        .form-range::-moz-range-thumb { background: var(--primary); }
+        input[type="range"] { accent-color: var(--green); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
@@ -257,7 +282,7 @@
         <div class="col-lg-8">
             <div class="chat-card">
                 <div class="chat-header">
-                    <span class="title"><i class="fas fa-comments me-2" style="color:var(--primary)"></i>智能问答</span>
+                    <span class="title"><i class="fas fa-comments me-2"></i>智能问答</span>
                     <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
                         <i class="fas fa-broom me-1"></i>清空对话
                     </button>
@@ -468,7 +493,7 @@ function appendAnswer(answer, sources, elapsed) {
             const title = escapeHtml(src.title || '');
             const file = escapeHtml(src.file || 'unknown');
             items += `<div class="source-item">
-                        <i class="fas fa-file-alt me-1" style="color:var(--primary)"></i>
+                        <i class="fas fa-file-alt me-1" style="color:var(--green)"></i>
                         <span class="st">${title || ('文档' + (i + 1))}</span>
                         <div class="text-muted" style="font-size:.78rem">${file}</div>
                       </div>`;
@@ -505,7 +530,7 @@ function appendErrorMessage(message) {
     div.innerHTML = `
         <div class="avatar avatar-ai"><i class="fas fa-robot"></i></div>
         <div class="bubble-wrap">
-            <div class="bubble bubble-ai" style="border-color:#f3c1c1;background:#fdf3f3;color:#a94442">
+            <div class="bubble bubble-ai" style="border-color:#5c2a2a;background:#2d1717;color:#f2a2a2">
                 <i class="fas fa-exclamation-triangle me-1"></i>${escapeHtml(message)}
             </div>
         </div>`;
