@@ -1,13 +1,10 @@
 """
 FastAPI 生产接口：标准化 REST API + 静态文件服务
-支持对接钉钉/企微/Web前端
 
 路由设计：
 - GET  /          → 返回 Web 前端页面
 - GET  /health    → 健康检查（K8s 探测用）
 - POST /v1/ask   → 智能问答（核心接口）
-
-面试时说：「我用了 FastAPI，自动生成了 Swagger 文档，方便调试和对接」
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -39,12 +36,7 @@ def serve_frontend():
 
 @app.get("/health")
 def health_check():
-    """健康检查接口
-    
-    面试时可以说：
-    - "部署时有 liveness probe 和 readiness probe"
-    - "外部监控系统通过 /health 判断服务是否存活"
-    """
+    """健康检查接口（liveness probe，外部监控据此判断服务是否存活）"""
     config = load_config()
     persist_dir = config.get("vectorstore", {}).get("persist_directory", "./chroma_db")
     return {

@@ -4,7 +4,6 @@ RAG 评估模块 — 量化问答系统质量
 为什么需要评估？
 - "效果好"是主观感受，需要数字说话
 - 优化前 vs 优化后，必须有可复现的指标对比
-- 面试时说："我构建了包含 X 条测试集的评估框架，优化后 recall@k 从 A 提升到了 B"
 
 评估维度（RAGAS 思路简化版）：
 1. Recall@K: 相关文档中被成功召回的比例（漏检了多少）
@@ -58,8 +57,6 @@ def compute_ndcg_at_k(retrieved_docs: list, relevance_scores: dict, k: int = Non
     - DCG: 相关文档排得越靠前，得分越高
     - IDCG: 理想情况下（最相关的排最前）的 DCG，只取前 K 个相关文档
     - NDCG = DCG / IDCG，归一化到 [0,1]
-
-    面试可以说："我用 NDCG 评估排序质量，而不只是简单召回率"
     """
     if not retrieved_docs or not relevance_scores:
         return 0.0

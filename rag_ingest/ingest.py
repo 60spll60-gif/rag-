@@ -135,7 +135,7 @@ def load_documents(doc_dir: str = None) -> list:
 def split_documents(docs: list) -> list:
     """将文档智能切分成小块
     
-    关键参数说明（面试考点）：
+    关键参数说明：
     - chunk_size: 每块最大字符数。太小语义不完整，太大混入多个主题
     - chunk_overlap: 相邻块重叠字符数。防止一句话被切断在两半
     - separators: 中文优先分隔符（句号、逗号等），避免按空格乱切

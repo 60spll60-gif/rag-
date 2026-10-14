@@ -1,9 +1,7 @@
 """
 统一日志配置 — 替代散乱的 print
-好处：
 1. 区分信息级别（INFO/WARNING/ERROR），方便排查问题
 2. 同时输出到控制台和文件，历史可追溯
-3. 面试时说：「我用了结构化日志，生产环境可以对接 ELK/Sentry」
 """
 import logging
 import sys

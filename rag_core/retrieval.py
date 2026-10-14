@@ -49,10 +49,9 @@ def _get_reranker():
 
 def retrieve(query: str, top_k: int = None) -> list:
     """向量检索（粗排）
-    
-    面试考点：
-    - 为什么先捞 Top-10 而不是直接 Top-3？→ 给重排留候选空间
-    - 用哪种相似度？→ cosine（归一化后等价）
+
+    先捞 Top-K 候选而不是直接取最终数：给重排留候选空间。
+    相似度：归一化向量用余弦相似度。
     """
     cfg = get_retrieval_config()
 
@@ -164,11 +163,9 @@ def generate_answer(question: str, sources: list) -> dict:
 
 def ask(question: str, top_k: int = None) -> dict:
     """一键问答入口
-    
+
     完整 RAG 链路：
     User Question → 混合检索(BM25+向量) → RRF 融合 → 重排 → Prompt 拼装 → LLM → Answer
-    
-    面试时说这句话就够了，面试官会顺着往下问
     """
     logger.info(f"收到问题: {question}")
 
